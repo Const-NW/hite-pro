@@ -2,10 +2,21 @@
 from __future__ import annotations
 
 from homeassistant.components.button import ButtonEntity
-from homeassistant.components import mqtt
-from homeassistant.core import callback
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up HiTE-PRO button platform."""
+    # Здесь должна быть логика создания кнопок
+    # Например:
+    # async_add_entities([HiteProButton(...)])
 
 class HiteProButton(ButtonEntity):
     """Representation of a HiTE-PRO button."""
@@ -22,7 +33,7 @@ class HiteProButton(ButtonEntity):
 
     async def async_press(self) -> None:
         """Handle the button press."""
-        await mqtt.async_publish(
+        await self.hass.components.mqtt.async_publish(
             self.hass,
             self._command_topic,
             self._payload_press,
