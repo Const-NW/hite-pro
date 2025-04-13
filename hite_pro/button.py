@@ -14,14 +14,20 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up HiTE-PRO button platform."""
-    # Здесь должна быть логика создания кнопок
-    # Например:
-    # async_add_entities([HiteProButton(...)])
+    # В реальной реализации здесь должна быть логика создания кнопок
+    # на основе данных из entry.data
+    async_add_entities([HiteProButton(hass, {
+        "unique_id": "test_button",
+        "name": "Test Button",
+        "command_topic": "/devices/hite-pro/controls/Reload/on",
+        "payload_press": "1",
+        "device_id": "gateway"
+    })])
 
 class HiteProButton(ButtonEntity):
     """Representation of a HiTE-PRO button."""
 
-    def __init__(self, hass, config):
+    def __init__(self, hass: HomeAssistant, config: dict):
         """Initialize the button."""
         self.hass = hass
         self._config = config

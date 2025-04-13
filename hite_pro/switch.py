@@ -14,14 +14,21 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up HiTE-PRO switch platform."""
-    # Здесь должна быть логика создания выключателей
-    # Например:
-    # async_add_entities([HiteProSwitch(...)])
+    # В реальной реализации здесь должна быть логика создания выключателей
+    async_add_entities([HiteProSwitch(hass, {
+        "unique_id": "test_switch",
+        "name": "Test Switch",
+        "state_topic": "/devices/hite-pro/controls/Relay1",
+        "command_topic": "/devices/hite-pro/controls/Relay1/on",
+        "payload_on": "1",
+        "payload_off": "0",
+        "device_id": "relay1"
+    })])
 
 class HiteProSwitch(SwitchEntity):
     """Representation of a HiTE-PRO switch."""
 
-    def __init__(self, hass, config):
+    def __init__(self, hass: HomeAssistant, config: dict):
         """Initialize the switch."""
         self.hass = hass
         self._config = config
@@ -51,4 +58,31 @@ class HiteProSwitch(SwitchEntity):
             self.hass, self._state_topic, message_received, 0
         )
 
-    # ... остальные методы как в предыдущей реализации
+    async def async_turn_on(self, **kwargs):
+        """Turn the switch on."""
+        await self.hass.components.mqtt.async_publish(
+            self.hass,
+            self._command_topic,
+            self._payload_on,
+            qos=0,
+            retain=True,
+        )
+        self._attr_is_on = True
+        self.async_write_ha_state()
+
+    async def async_turn_off(self, **kwargs):
+        """Turn the switch off."""
+        await self.hass.components.mqtt.async_publish(
+            self.hass,
+            self._command_topic,
+            self._payload_off,
+            qos=0,
+            retain=True,
+        )
+        self._attr_is_on = False
+        self.async_write_ha_state()
+
+    async def async_will_remove_from_hass(self):
+        """Unsubscribe from MQTT events."""
+        if self._sub_state:
+            self._sub_state()

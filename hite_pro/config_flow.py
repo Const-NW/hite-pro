@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigFlow
@@ -25,7 +24,6 @@ class HiteProConfigFlow(ConfigFlow, domain=DOMAIN):
             else:
                 await self.async_set_unique_id(DOMAIN)
                 self._abort_if_unique_id_configured()
-                
                 return self.async_create_entry(
                     title="HiTE-PRO Devices",
                     data=user_input,

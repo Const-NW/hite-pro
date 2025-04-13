@@ -2,16 +2,33 @@
 from __future__ import annotations
 
 from homeassistant.components.light import LightEntity
-from homeassistant.components import mqtt
-from homeassistant.core import callback
-import homeassistant.util.color as color_util
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up HiTE-PRO light platform."""
+    # В реальной реализации здесь должна быть логика создания светильников
+    async_add_entities([HiteProLight(hass, {
+        "unique_id": "test_light",
+        "name": "Test Light",
+        "state_topic": "/devices/hite-pro/controls/Light1",
+        "command_topic": "/devices/hite-pro/controls/Light1/on",
+        "payload_on": "1",
+        "payload_off": "0",
+        "device_id": "light1"
+    })])
 
 class HiteProLight(LightEntity):
     """Representation of a HiTE-PRO light."""
 
-    def __init__(self, hass, config):
+    def __init__(self, hass: HomeAssistant, config: dict):
         """Initialize the light."""
         self.hass = hass
         self._config = config
@@ -26,36 +43,30 @@ class HiteProLight(LightEntity):
         self._brightness = None
         self._sub_state = None
 
-        # RGB support if configured
-        self._rgb_topic = config.get("rgb_command_topic")
-        self._rgb_value_template = config.get("rgb_value_template")
-
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT events."""
         @callback
         def message_received(msg):
             """Handle new MQTT messages."""
             payload = msg.payload
-            
             if payload == self._payload_on:
                 self._attr_is_on = True
             elif payload == self._payload_off:
                 self._attr_is_on = False
             elif payload.isdigit():
                 self._brightness = int(payload)
-            
             self.async_write_ha_state()
 
         if self._state_topic:
-            self._sub_state = await mqtt.async_subscribe(
+            self._sub_state = await self.hass.components.mqtt.async_subscribe(
                 self.hass, self._state_topic, message_received, 0
             )
 
     async def async_turn_on(self, **kwargs):
         """Turn the light on."""
         if kwargs.get("brightness") is not None:
-            brightness = int(kwargs["brightness"])
-            await mqtt.async_publish(
+            brightness = kwargs["brightness"]
+            await self.hass.components.mqtt.async_publish(
                 self.hass,
                 self._command_topic,
                 str(brightness),
@@ -63,30 +74,20 @@ class HiteProLight(LightEntity):
                 retain=True,
             )
             self._brightness = brightness
-        elif kwargs.get("rgb_color") is not None and self._rgb_topic:
-            rgb = kwargs["rgb_color"]
-            await mqtt.async_publish(
-                self.hass,
-                self._rgb_topic,
-                f"{rgb[0]},{rgb[1]},{rgb[2]}",
-                qos=0,
-                retain=True,
-            )
         else:
-            await mqtt.async_publish(
+            await self.hass.components.mqtt.async_publish(
                 self.hass,
                 self._command_topic,
                 self._payload_on,
                 qos=0,
                 retain=True,
             )
-        
         self._attr_is_on = True
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
         """Turn the light off."""
-        await mqtt.async_publish(
+        await self.hass.components.mqtt.async_publish(
             self.hass,
             self._command_topic,
             self._payload_off,

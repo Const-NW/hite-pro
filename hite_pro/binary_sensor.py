@@ -2,15 +2,33 @@
 from __future__ import annotations
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
-from homeassistant.components import mqtt
-from homeassistant.core import callback
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up HiTE-PRO binary sensor platform."""
+    # В реальной реализации здесь должна быть логика создания бинарных сенсоров
+    async_add_entities([HiteProBinarySensor(hass, {
+        "unique_id": "test_binary_sensor",
+        "name": "Test Motion",
+        "state_topic": "/devices/hite-pro/controls/Motion",
+        "payload_on": "1",
+        "payload_off": "0",
+        "device_class": "motion",
+        "device_id": "motion1"
+    })])
 
 class HiteProBinarySensor(BinarySensorEntity):
     """Representation of a HiTE-PRO binary sensor."""
 
-    def __init__(self, hass, config):
+    def __init__(self, hass: HomeAssistant, config: dict):
         """Initialize the binary sensor."""
         self.hass = hass
         self._config = config
@@ -36,7 +54,7 @@ class HiteProBinarySensor(BinarySensorEntity):
                 self._attr_is_on = False
             self.async_write_ha_state()
 
-        self._sub_state = await mqtt.async_subscribe(
+        self._sub_state = await self.hass.components.mqtt.async_subscribe(
             self.hass, self._state_topic, message_received, 0
         )
 
