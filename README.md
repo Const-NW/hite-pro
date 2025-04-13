@@ -3,15 +3,17 @@
 Создайте структуру папок:
 
 
-    └── custom_components/
-        
+    config/
+        └── custom_components/
         └── hite_pro/
-            
             ├── __init__.py
-        
+            ├── config_flow.py
             ├── manifest.json
-            
-            └── strings.json
+            ├── button.py
+            ├── switch.py
+            ├── light.py
+            ├── sensor.py
+            └── binary_sensor.py
 
 Перезагрузите Home Assistant
 
