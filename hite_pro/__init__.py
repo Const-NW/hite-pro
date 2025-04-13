@@ -200,6 +200,9 @@ async def add_entity(hass: HomeAssistant, platform: str, config: dict[str, Any])
     if platform_entity:
         await platform_entity.async_add_entities([entity])
 
+# [Классы сущностей HiteProButton, HiteProSwitch, HiteProLight, 
+#  HiteProSensor и HiteProBinarySensor остаются без изменений]
+
 class HiteProButton(ButtonEntity):
     """Representation of a HiTE-PRO button."""
 
