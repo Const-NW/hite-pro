@@ -2,7 +2,9 @@
 
 Создайте структуру папок:
 
+
 config/
+
 └── custom_components/
 
     └── hite_pro/
