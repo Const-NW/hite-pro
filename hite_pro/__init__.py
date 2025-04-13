@@ -9,7 +9,7 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigEntry, ConfigFlow
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, SOURCE_IMPORT
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
@@ -65,9 +65,16 @@ class HiteProConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user",
-            data_schema=CONFIG_SCHEMA,
+            data_schema=vol.Schema({
+                vol.Required(CONF_MQTT_TOPIC, default=DEFAULT_TOPIC): str,
+            }),
             errors=errors,
         )
+
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+    """Set up the HiTE-PRO component."""
+    hass.data.setdefault(DOMAIN, {})
+    return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up HiTE-PRO from a config entry."""
