@@ -1,0 +1,14 @@
+{
+  "title": "HiTE-PRO Auto Discovery",
+  "config": {
+    "step": {
+      "user": {
+        "title": "HiTE-PRO Configuration",
+        "description": "Настройте автоматическое обнаружение устройств HiTE-PRO через MQTT.",
+        "data": {
+          "mqtt_topic": "MQTT topic для устройств (например: /devices/hite-pro/controls/#)"
+        }
+      }
+    }
+  }
+}
