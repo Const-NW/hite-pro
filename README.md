@@ -4,9 +4,13 @@
 
 config/
 └── custom_components/
+
     └── hite_pro/
+    
         ├── __init__.py
+        
         ├── manifest.json
+        
         └── strings.json
 
 Перезагрузите Home Assistant
